@@ -15,7 +15,7 @@ class PredictionSerializer(serializers.ModelSerializer):
 class ModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Model
-        fields = ['id', 'seq_len', 'step', 'name']
+        fields = ['id', 'seq_len', 'step', 'name', 'ticker']
 
 
 class TickerSerializer(serializers.ModelSerializer):
