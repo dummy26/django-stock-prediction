@@ -11,40 +11,47 @@ from .utils import get_ticker_from_symbol
 
 
 @api_view(['POST'])
+def train_new(request):
+    name = request.POST['name'].lower()
+    symbol = request.POST['ticker']
+    seq_len = int(request.POST['seq_len'])
+    step = int(request.POST['step'])
+    epochs = int(request.POST.get('epochs', 1))
+
+    ticker = get_ticker_from_symbol(symbol)
+    if ticker is None:
+        return Response(f'Invalid symbol: {symbol}', status=status.HTTP_404_NOT_FOUND)
+
+    # check if model already exists
+    model = Model.objects.filter(ticker=ticker, seq_len=seq_len, step=step, name=name).first()
+    if model is not None:
+        return Response(f'Model with name={name} seq_len={seq_len} step={step} for symbol {ticker.symbol} already exists. Please use /api/train/{model.id}/ to POST a train request.', status=status.HTTP_404_NOT_FOUND)
+
+    # ticker coming from request.data might be in different case so changing it to coreect value
+    data = request.data.copy()
+    data['ticker'] = ticker.pk
+    serializer = ModelSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
+
+    model = serializer.save()
+    # model.train(epochs)
+    print('training new model......\n')
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
 def train(request):
-    if 'id' in request.POST:
-        pk = int(request.POST['id'])
-        model = Model.objects.filter(pk=pk).first()
-        if model is None:
-            return Response(f'No model with id={pk} found', status=status.HTTP_404_NOT_FOUND)
-    else:
-        name = request.POST['name'].lower()
-        symbol = request.POST['ticker']
-        seq_len = int(request.POST['seq_len'])
-        step = int(request.POST['step'])
-        epochs = 1
-
-        ticker = get_ticker_from_symbol(symbol)
-        if ticker is None:
-            return Response(f'Invalid symbol: {symbol}', status=status.HTTP_404_NOT_FOUND)
-
-        # ticker coming from request.data might be in different case so changing it to coreect value
-        data = request.data.copy()
-        data['ticker'] = ticker.pk
-        model = Model.objects.filter(ticker=ticker, seq_len=seq_len, step=step, name=name).first()
-        if model is None:
-            t_serializer = ModelSerializer(data=data)
-            if not t_serializer.is_valid():
-                return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
-            model = t_serializer.save()
-        else:
-            return Response(f'Model with name={name} seq_len={seq_len} step={step} for symbol {ticker.symbol} already exists. Please use /api/train/{model.id}/ to POST a train request.', status=status.HTTP_404_NOT_FOUND)
+    pk = int(request.POST['id'])
+    model = Model.objects.filter(pk=pk).first()
+    if model is None:
+        return Response(f'No model with id={pk} found', status=status.HTTP_404_NOT_FOUND)
 
     epochs = int(request.POST.get('epochs', 1))
     # model.train(epochs)
     print('training......\n')
     serializer = ModelSerializer(model)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @ api_view(['GET'])
