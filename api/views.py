@@ -22,6 +22,9 @@ def train_new(request):
     except (MultiValueDictKeyError, ValueError):
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
 
+    if epochs < 1:
+        return Response(f"Epochs can't be less than 1", status=status.HTTP_404_NOT_FOUND)
+
     ticker = get_ticker_from_symbol(symbol)
     if ticker is None:
         return Response(f'Invalid symbol: {symbol}', status=status.HTTP_404_NOT_FOUND)
@@ -51,6 +54,9 @@ def train(request):
         epochs = int(request.data.get('epochs', 1))
     except (MultiValueDictKeyError, ValueError):
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
+
+    if epochs < 1:
+        return Response(f"Epochs can't be less than 1", status=status.HTTP_404_NOT_FOUND)
 
     model = Model.objects.filter(pk=pk).first()
     if model is None:
