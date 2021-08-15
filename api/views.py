@@ -1,3 +1,4 @@
+from django.utils.datastructures import MultiValueDictKeyError
 from model_backend.model.keras_model.utils import InvalidPredictionDateError
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -12,11 +13,14 @@ from .utils import get_ticker_from_symbol
 
 @api_view(['POST'])
 def train_new(request):
-    name = request.POST['name'].lower()
-    symbol = request.POST['ticker']
-    seq_len = int(request.POST['seq_len'])
-    step = int(request.POST['step'])
-    epochs = int(request.POST.get('epochs', 1))
+    try:
+        name = request.POST['name'].lower()
+        symbol = request.POST['ticker']
+        seq_len = int(request.POST['seq_len'])
+        step = int(request.POST['step'])
+        epochs = int(request.POST.get('epochs', 1))
+    except (MultiValueDictKeyError, ValueError):
+        return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
 
     ticker = get_ticker_from_symbol(symbol)
     if ticker is None:
@@ -42,12 +46,16 @@ def train_new(request):
 
 @api_view(['POST'])
 def train(request):
-    pk = int(request.POST['id'])
+    try:
+        pk = int(request.POST['id'])
+        epochs = int(request.POST.get('epochs', 1))
+    except (MultiValueDictKeyError, ValueError):
+        return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
+
     model = Model.objects.filter(pk=pk).first()
     if model is None:
         return Response(f'No model with id={pk} found', status=status.HTTP_404_NOT_FOUND)
 
-    epochs = int(request.POST.get('epochs', 1))
     # model.train(epochs)
     print('training......\n')
     serializer = ModelSerializer(model)
