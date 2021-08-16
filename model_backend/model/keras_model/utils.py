@@ -31,7 +31,7 @@ def check_if_pred_date_correct(pred_date: dt.date, df_first_date: dt.date, df_la
 
     If df_last_date >= date - dt.timedelta(days=1) then we surely have the data for that pred_date
     """
-    print(df_first_date, df_last_date, pred_date)
+
     if df_first_date + dt.timedelta(days=seq_len) > pred_date:
         raise InvalidPredictionDateError(pred_date, df_first_date, seq_len, lower=True)
 

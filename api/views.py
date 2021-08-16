@@ -1,5 +1,6 @@
-from django.utils.datastructures import MultiValueDictKeyError
+from model_backend.data.data_processor import ScalerNotFoundError
 from model_backend.model.keras_model.utils import InvalidPredictionDateError
+from model_backend.model.model import ModelNotFoundError
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -19,7 +20,7 @@ def train_new(request):
         seq_len = int(request.data['seq_len'])
         step = int(request.data['step'])
         epochs = int(request.data.get('epochs', 1))
-    except (MultiValueDictKeyError, ValueError):
+    except (KeyError, ValueError):
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
 
     if epochs < 1:
@@ -52,7 +53,7 @@ def train(request):
     try:
         pk = int(request.data['id'])
         epochs = int(request.data.get('epochs', 1))
-    except (MultiValueDictKeyError, ValueError):
+    except (KeyError, ValueError):
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
 
     if epochs < 1:
@@ -84,6 +85,8 @@ def predict(request, pk):
             y, actual_pred_date = model.predict(pred_date)
         except InvalidPredictionDateError:
             return Response(f'Invalid prediction date given: {pred_date}', status=status.HTTP_404_NOT_FOUND)
+        except (ModelNotFoundError, ScalerNotFoundError):
+            return Response(f'Could not find model files. Please train this model again', status=status.HTTP_404_NOT_FOUND)
 
         prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y)
 
