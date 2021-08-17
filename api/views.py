@@ -95,12 +95,20 @@ def predict(request, pk):
 
 
 @ api_view(['GET'])
-def all_models(request, symbol):
+def ticker_models(request, symbol):
     ticker = get_ticker_from_symbol(symbol)
     if ticker is None:
         return Response(f'Invalid symbol given: {symbol}', status=status.HTTP_404_NOT_FOUND)
 
     models = Model.objects.filter(ticker=ticker)
+    serializer = ModelSerializer(models, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@ api_view(['GET'])
+def all_models(request):
+    models = Model.objects.all()
     serializer = ModelSerializer(models, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
