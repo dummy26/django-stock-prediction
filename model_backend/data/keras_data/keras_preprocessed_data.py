@@ -12,9 +12,9 @@ from tensorflow import keras
 
 class KerasPreprocessedData(PreprocessedData):
     def __init__(self, ticker: str, data_processor: Type[DataProcessor], raw_data_source: Type[RawDataSource],
-                 seq_len: int, batch_size: int, step: int, future_predict_period: str, model_name: str) -> None:
+                 seq_len: int, batch_size: int, step: int, future_predict_period: str) -> None:
         # validate_ticker(ticker)
-        self.data_processor = data_processor(ticker, raw_data_source, seq_len, step, future_predict_period, model_name)
+        self.data_processor = data_processor(ticker, raw_data_source, seq_len, step, future_predict_period)
         self.seq_len = seq_len
         self.batch_size = batch_size
         self.step = step

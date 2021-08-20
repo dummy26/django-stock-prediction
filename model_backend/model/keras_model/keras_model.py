@@ -19,15 +19,13 @@ from .utils import get_date_from_string, get_prediction_date
 class KerasModel(Model, ABC):
     def __init__(self, ticker: str, preprocessed_data: Type[PreprocessedData],
                  data_processor: Type[DataProcessor], raw_data_source: Type[RawDataSource],
-                 name: str, seq_len: int = SEQ_LEN, batch_size: int = BATCH_SIZE,
+                 seq_len: int = SEQ_LEN, batch_size: int = BATCH_SIZE,
                  step: int = STEP, future_predict_period: int = FUTURE_PERIOD_PREDICT) -> None:
 
         super().__init__(ticker)
         self.preprocessed_data = preprocessed_data(ticker, data_processor, raw_data_source,
                                                    seq_len=seq_len, batch_size=batch_size,
-                                                   step=step,  future_predict_period=future_predict_period,
-                                                   model_name=name)
-        self.name = name
+                                                   step=step,  future_predict_period=future_predict_period)
         self.seq_len = seq_len
         self.batch_size = batch_size
         self.step = step
@@ -92,8 +90,7 @@ class KerasModel(Model, ABC):
     def _get_checkpoint_path(self) -> str:
         dirname = os.path.dirname(os.path.realpath(__file__))
         base_path = os.path.join(dirname, SAVED_MODELS_BASE_PATH)
-        model_path = os.path.join(base_path, f'{self.name}-{self.seq_len}-{self.step}')
-        checkpoint_base_path = os.path.join(model_path, self.ticker)
+        checkpoint_base_path = os.path.join(base_path, self.ticker)
 
         checkpoint_path = os.path.join(checkpoint_base_path, 'cp.ckpt')
 

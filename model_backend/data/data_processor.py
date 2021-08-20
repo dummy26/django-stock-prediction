@@ -34,13 +34,12 @@ class PandasDataProcessor(DataProcessor):
     VAL_SPLIT_FRACTION = 0.2
 
     def __init__(self, ticker: str, raw_data_source: Type[RawDataSource],
-                 seq_len: int, step: int, future_predict_period: str, model_name: str) -> None:
+                 seq_len: int, step: int, future_predict_period: str) -> None:
         super().__init__(ticker, raw_data_source)
         self.ticker = ticker
         self.seq_len = seq_len
         self.step = step
         self.future_predict_period = future_predict_period
-        self.model_name = model_name
 
     def get_preprocessed_dfs(self) -> List[pd.DataFrame]:
         df = self.raw_data_source.get_raw_df()
@@ -113,14 +112,13 @@ class PandasDataProcessor(DataProcessor):
     def get_scaler(self) -> StandardScaler:
         file_path = self.get_scaler_file_path()
         if not os.path.exists(file_path):
-            raise ScalerNotFoundError(file_path, self.ticker, self.model_name, self.seq_len, self.step)
+            raise ScalerNotFoundError(file_path, self.ticker, self.seq_len, self.step)
         return joblib.load(file_path)
 
     def get_scaler_file_path(self):
         base_dir = os.path.dirname(os.path.realpath(__file__))
         scaler_path = os.path.join(base_dir, 'scalers')
-        model_path = os.path.join(scaler_path, f'{self.model_name}-{self.seq_len}-{self.step}')
-        ticker_path = os.path.join(model_path, self.ticker)
+        ticker_path = os.path.join(scaler_path, self.ticker)
 
         if not os.path.exists(ticker_path):
             os.makedirs(ticker_path)
@@ -146,6 +144,6 @@ class NotEnoughSequencesError(Exception):
 
 
 class ScalerNotFoundError(Exception):
-    def __init__(self, file_path: str, ticker: str,  model_name: str, seq_len: int, step: int) -> None:
-        msg = f"Scaler for model {model_name} with seq_len={seq_len} and step={step} trained for ticker: {ticker} not found. Expected to find it at this location: {file_path}. Please train such a model first."
+    def __init__(self, file_path: str, ticker: str, seq_len: int, step: int) -> None:
+        msg = f"Scaler for model with seq_len={seq_len} and step={step} trained for ticker: {ticker} not found. Expected to find it at this location: {file_path}. Please train such a model first."
         super().__init__(msg)
