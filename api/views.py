@@ -18,7 +18,7 @@ def train_new(request):
         name = request.data['name'].lower()
         symbol = request.data['ticker']
         seq_len = int(request.data['seq_len'])
-        step = int(request.data['step'])
+        step = int(request.data.get('step', 1))
         epochs = int(request.data.get('epochs', 1))
     except (KeyError, ValueError):
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)
@@ -38,6 +38,8 @@ def train_new(request):
     # ticker coming from request.data might be in different case so changing it to coreect value
     data = request.data.copy()
     data['ticker'] = ticker.pk
+    if 'step' not in data:
+        data['step'] = step
     serializer = ModelSerializer(data=data)
     if not serializer.is_valid():
         return Response(f'Invalid params', status=status.HTTP_404_NOT_FOUND)

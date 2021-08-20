@@ -43,6 +43,10 @@ def check_if_pred_date_correct(pred_date: dt.date, df_first_date: dt.date, df_la
     elif df_last_date < pred_date - dt.timedelta(days=1):
         raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
+    # If pred_date is Sat or Sun -> error
+    elif pred_date.weekday() == 5 or pred_date.weekday() == 6:
+        raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
+
 
 class InvalidPredictionDateError(Exception):
     def __init__(self, pred_date: dt.date, df_date: dt.date, seq_len: int, lower: bool = False) -> None:
