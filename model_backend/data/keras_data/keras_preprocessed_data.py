@@ -108,17 +108,17 @@ class KerasPreprocessedData(PreprocessedData):
     def get_preprocessed_prediction_dataset(self, pred_date: dt.date):
 
         x = self.data_processor.get_preprocessed_prediction_df(pred_date)
-        dataset = keras.preprocessing.timeseries_dataset_from_array(
-            x,
-            targets=None,
-            sequence_length=self.seq_len,
-            sampling_rate=self.step,
-            batch_size=self.batch_size,
-        )
-        return dataset
+        return np.expand_dims(x, 0)
 
-        # x = np.expand_dims(x, 0)
-        # return x, scaler
+        # To be used when model.predict() is used
+        # dataset = keras.preprocessing.timeseries_dataset_from_array(
+        #     x,
+        #     targets=None,
+        #     sequence_length=self.seq_len,
+        #     sampling_rate=self.step,
+        #     batch_size=self.batch_size,
+        # )
+        # return dataset
 
     def invTransform(self, y):
         return self.data_processor.invTransform(y)

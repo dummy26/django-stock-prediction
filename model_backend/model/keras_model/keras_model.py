@@ -2,18 +2,18 @@ import os
 from abc import ABC, abstractmethod
 from typing import Type
 
-from ...data.data_processor import DataProcessor
-from ...data.preprocessed_data import PreprocessedData
-from ...data.raw_data import RawDataSource
-from ..model import Model, ModelNotFoundError
 from tensorflow.keras.layers import LSTM, BatchNormalization, Dense, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.python.framework import errors_impl
 from tensorflow.python.keras.callbacks import ModelCheckpoint
 
+from ...data.data_processor import DataProcessor
+from ...data.preprocessed_data import PreprocessedData
+from ...data.raw_data import RawDataSource
+from ..model import Model, ModelNotFoundError
 from .constants import (BATCH_SIZE, FUTURE_PERIOD_PREDICT,
                         SAVED_MODELS_BASE_PATH, SEQ_LEN, STEP)
-from .utils import get_date_from_string, get_prediction_date
+from .utils import get_prediction_date
 
 
 class KerasModel(Model, ABC):
@@ -30,6 +30,10 @@ class KerasModel(Model, ABC):
         self.batch_size = batch_size
         self.step = step
         self.input_shape = (seq_len, len(self.preprocessed_data.data_processor.raw_data_source.FEATURE_KEYS))
+        try:
+            self.model = self.__load_saved_model()
+        except ModelNotFoundError:
+            self.model = None
 
     def train(self, epochs: int = 1):
         dataset_train, dataset_val, dataset_test = self.preprocessed_data.get_preprocessed_datasets()
@@ -59,11 +63,9 @@ class KerasModel(Model, ABC):
         print('Test Loss: ', model.evaluate(dataset_test))
 
     def __get_model(self):
-        try:
-            model = self.__load_saved_model()
-        except ModelNotFoundError:
-            model = self._create_model()
-        return model
+        if self.model is None:
+            return self._create_model()
+        return self.model
 
     def __load_saved_model(self):
         # the weights of the loaded model can be different from the weights of the model in train cuz only the best weights are saved.
@@ -82,7 +84,9 @@ class KerasModel(Model, ABC):
         x = self.preprocessed_data.get_preprocessed_prediction_dataset(pred_date)
 
         model = self.__load_saved_model()
-        y = model.predict(x)
+        # calling model() is faster for less number of batches (in this case we have only 1 batch)
+        # y = model.predict(x)
+        y = model(x, training=False)
 
         actual_y = self.preprocessed_data.invTransform(y)
         return actual_y*100, pred_date

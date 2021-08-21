@@ -1,9 +1,6 @@
-from django.core.validators import MinValueValidator
 from django.db import models
-from model_backend.data.data_processor import PandasDataProcessor
-from model_backend.data.keras_data.keras_preprocessed_data import KerasPreprocessedData
-from model_backend.data.raw_data import YfinanceNSERawData
-from model_backend.model.keras_model.keras_model import LstmModel
+
+from api.lstm_registry import lstm_registry
 
 
 class Ticker(models.Model):
@@ -17,13 +14,8 @@ class Ticker(models.Model):
 class Model(models.Model):
     ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
 
-    def _get_model(self):
-        backend_model = LstmModel(self.ticker.symbol, KerasPreprocessedData, PandasDataProcessor, YfinanceNSERawData)
-        return backend_model
-
     def predict(self, pred_date):
-        backend_model = self._get_model()
-        return backend_model.predict(pred_date)
+        return lstm_registry.get_service_by_symbol(self.ticker.symbol).predict(pred_date)
 
     def __str__(self) -> str:
         return f'{self.ticker.symbol}'
