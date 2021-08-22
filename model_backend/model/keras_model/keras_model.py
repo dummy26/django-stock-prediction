@@ -46,13 +46,13 @@ class KerasModel(Model, ABC):
         input_shape = (inputs.shape[1], inputs.shape[2])
         assert input_shape == self.input_shape
 
-        model = self.__get_model()
+        self.model = self.__get_model()
 
         checkpoint_path = self._get_checkpoint_path()
         checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_loss',
                                      save_best_only=True, save_weights_only=True)
 
-        history = model.fit(
+        history = self.model.fit(
             dataset_train,
             epochs=epochs,
             validation_data=dataset_val,
@@ -60,7 +60,7 @@ class KerasModel(Model, ABC):
         )
 
         print('History: ', history.history)
-        print('Test Loss: ', model.evaluate(dataset_test))
+        print('Test Loss: ', self.model.evaluate(dataset_test))
 
     def __get_model(self):
         if self.model is None:
@@ -79,15 +79,17 @@ class KerasModel(Model, ABC):
         return model
 
     def predict(self, date: str = None):
+        if self.model is None:
+            raise ModelNotFoundError(self.ticker, self.seq_len, self.step)
+
         df = self.preprocessed_data.data_processor.raw_data_source.get_raw_df()
+
         pred_date = get_prediction_date(df, self.seq_len, date)
         x = self.preprocessed_data.get_preprocessed_prediction_dataset(pred_date)
 
-        model = self.__load_saved_model()
         # calling model() is faster for less number of batches (in this case we have only 1 batch)
-        # y = model.predict(x)
-        y = model(x, training=False)
-
+        # y = self.model.predict(x)
+        y = self.model(x, training=False)[0]
         actual_y = self.preprocessed_data.invTransform(y)
         return actual_y*100, pred_date
 

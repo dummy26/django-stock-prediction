@@ -1,3 +1,5 @@
+import time
+
 from model_backend.data.data_processor import ScalerNotFoundError
 from model_backend.model.keras_model.utils import InvalidPredictionDateError
 from model_backend.model.model import ModelNotFoundError
@@ -28,7 +30,9 @@ def prediction(request, symbol):
     prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date).first()
     if prediction_obj is None:
         try:
+            start = time.monotonic()
             y, actual_pred_date = model.predict(pred_date)
+            print('views predict', time.monotonic() - start)
         except InvalidPredictionDateError:
             return Response(f'Invalid prediction date given: {pred_date}', status=status.HTTP_404_NOT_FOUND)
         except (ModelNotFoundError, ScalerNotFoundError):

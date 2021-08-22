@@ -1,6 +1,7 @@
 import datetime as dt
 
 import pandas as pd
+from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -12,6 +13,10 @@ def get_date_from_string(date: str) -> dt.date:
         raise InvalidDateError(date)
 
 
+def get_df_first_and_last_date(df: pd.DataFrame):
+    return(df.index[0].date(), df.index[-1].date())
+
+
 def get_prediction_date(df: pd.DataFrame, seq_len: int, date: str = None):
     if date is None:
         pred_date = dt.datetime.now().date()
@@ -19,8 +24,7 @@ def get_prediction_date(df: pd.DataFrame, seq_len: int, date: str = None):
     else:
         pred_date = get_date_from_string(date)
 
-    df_first_date = df.index[0].date()
-    df_last_date = df.index[-1].date()
+    df_first_date, df_last_date = get_df_first_and_last_date(df)
     check_if_pred_date_correct(pred_date, df_first_date, df_last_date, seq_len)
     return pred_date
 
@@ -32,6 +36,10 @@ def check_if_pred_date_correct(pred_date: dt.date, df_first_date: dt.date, df_la
     If df_last_date >= date - dt.timedelta(days=1) then we surely have the data for that pred_date
     """
 
+    # If pred_date is Sat or Sun -> error
+    if pred_date.weekday() == 5 or pred_date.weekday() == 6:
+        raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
+
     if df_first_date + dt.timedelta(days=seq_len) > pred_date:
         raise InvalidPredictionDateError(pred_date, df_first_date, seq_len, lower=True)
 
@@ -40,11 +48,12 @@ def check_if_pred_date_correct(pred_date: dt.date, df_first_date: dt.date, df_la
         if pred_date != df_last_date + dt.timedelta(days=3):
             raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
-    elif df_last_date < pred_date - dt.timedelta(days=1):
+    # pred_date can't be 1 day more than df_last date
+    elif df_last_date + dt.timedelta(days=1) < pred_date:
         raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
-    # If pred_date is Sat or Sun -> error
-    elif pred_date.weekday() == 5 or pred_date.weekday() == 6:
+    # can only pred for tomorrow if current time is greater than MARKET_CLOSING_TIME (cuz we get correct value of CLOSE_PRICE after MARKET_CLOSING_TIME)
+    elif df_last_date + dt.timedelta(days=1) == pred_date and dt.datetime.now().time() < MARKET_CLOSING_TIME:
         raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
 

@@ -1,7 +1,10 @@
+import datetime as dt
 from abc import ABC, abstractmethod
+from functools import cache
 
 import pandas as pd
 import yfinance as yf
+from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME
 
 
 class RawDataSource(ABC):
@@ -23,26 +26,18 @@ class YfinanceNSERawData(RawDataSource):
     FEATURE_KEYS = [OPEN_COLUMN, HIGH_COLUMN, LOW_COLUMN, CLOSE_COLUMN, VOL_COLUMN]
     # STOCK_CSV_BASE_PATH = 'stocks_csv'
 
-    # the file it fetches from fielsystem may not be the lastest one, so store date when file was stored in its name and comapare with current date
-    """def get_raw_df(self, period: str = 'max') -> pd.DataFrame:
-        if period not in self.ALLOWED_PERIOD_VALUES:
-            raise ValueError(f"'{period}' is not a valid value for period. It must be one of {self.ALLOWED_PERIOD_VALUES}")
-
-        dirname = os.path.dirname(os.path.realpath(__file__))
-        base_path = os.path.join(dirname, STOCK_CSV_BASE_PATH)
-        file_path = os.path.join(base_path, self.ticker + '.csv')
-
-        if not os.path.exists(base_path):
-            os.mkdir(base_path)
-
-        if not os.path.exists(file_path):
-            df = self.__get_raw_df()
-            df.to_csv(file_path)
-
-        df = pd.read_csv(file_path)
-        return df"""
-
     def get_raw_df(self, period: str = 'max') -> pd.DataFrame:
+        date = dt.datetime.now().date()
+        market_closed = True if dt.datetime.now().time() > MARKET_CLOSING_TIME else False
+        return self._get_raw_df(date, market_closed, period)
+
+    """
+    When current date changes or market closes, new data is supposed to be fetched.
+    So, the date and market_closed args exist only to figure out when to call this func again rather than returning cached data 
+    """
+    @cache
+    def _get_raw_df(self, date: dt.date, market_closed: bool, period: str = 'max') -> pd.DataFrame:
+        print(f'\nget_raw {self.ticker}\n')
         if period not in self.ALLOWED_PERIOD_VALUES:
             raise ValueError(f"'{period}' is not a valid value for period. It must be one of {self.ALLOWED_PERIOD_VALUES}")
 
