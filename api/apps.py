@@ -12,6 +12,9 @@ class ApiConfig(AppConfig):
     def ready(self):
         from api.lstm_registry import lstm_registry
         from api.models import Ticker
+        from api.utils import populate_ticker_and_model_db
+
+        populate_ticker_and_model_db()
 
         symbols = Ticker.objects.values_list('symbol', flat=True)
         for symbol in symbols:

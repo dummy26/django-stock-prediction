@@ -1,10 +1,16 @@
+import os
+from functools import cache
+
 import pandas as pd
+from model_backend.data.constants import (NAME_OF_COMP_COLUMN, SYMBOL_COLUMN,
+                                          TICKERS_CSV)
 
-from .constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
 
-
+@cache
 def get_all_nse_company_names_and_ticker() -> pd.DataFrame:
-    url = 'https://archives.nseindia.com/content/equities/EQUITY_L.csv'
-    df = pd.read_csv(url)
+    dirname = os.path.dirname(os.path.realpath(__file__))
+    file_path = os.path.join(dirname, TICKERS_CSV)
+
+    df = pd.read_csv(file_path)
     df = df[[NAME_OF_COMP_COLUMN, SYMBOL_COLUMN]]
     return df

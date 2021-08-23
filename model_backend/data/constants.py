@@ -1,3 +1,3 @@
-NSE_COMPANY_NAME_AND_SYMBOLS_FILE_NAME = 'nse_company_name_and_symbols.csv'
+TICKERS_CSV = 'tickers.csv'
 NAME_OF_COMP_COLUMN = 'NAME OF COMPANY'
 SYMBOL_COLUMN = 'SYMBOL'

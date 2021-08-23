@@ -3,4 +3,3 @@ __pycache__
 db.sqlite3
 model_backend/model/keras_model/saved_models
 model_backend/data/scalers/
-model_backend/data/nse_company_name_and_symbols.csv
