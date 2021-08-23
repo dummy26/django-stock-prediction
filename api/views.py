@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from api.models import Model, Prediction, Ticker
 from api.serializers import (ModelSerializer, PredictionSerializer,
                              TickerSerializer)
-from api.utils import get_ticker_from_symbol
+from api.utils import get_latest_pred_date, get_ticker_from_symbol
 
 
 @ api_view(['GET'])
@@ -23,7 +23,7 @@ def prediction(request, symbol):
     if model is None:
         return Response(f'No model for ticker: {ticker} found', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    pred_date = request.GET.get('pred_date')
+    pred_date = get_pred_date(request)
     if pred_date is None:
         return Response('pred_date not found in query parameters', status=status.HTTP_404_NOT_FOUND)
 
@@ -42,6 +42,15 @@ def prediction(request, symbol):
 
     serializer = PredictionSerializer(prediction_obj)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def get_pred_date(request):
+    latest_prediction = request.GET.get('latest')
+    if latest_prediction is not None and latest_prediction.lower() == 'true':
+        return get_latest_pred_date()
+
+    pred_date = request.GET.get('pred_date')
+    return pred_date
 
 
 @ api_view(['GET'])
