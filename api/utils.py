@@ -1,5 +1,5 @@
 import datetime as dt
-from functools import cache
+from functools import lru_cache
 
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
 from model_backend.data.utils import get_all_nse_company_names_and_ticker
@@ -35,7 +35,7 @@ def populate_ticker_and_model_db():
     Model.objects.bulk_create(new_models)
 
 
-@cache
+@lru_cache(maxsize=64)
 def get_str_from_date(date: dt.date) -> str:
     return dt.datetime.strftime(date, DATE_FORMAT)
 

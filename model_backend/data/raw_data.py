@@ -1,6 +1,6 @@
 import datetime as dt
 from abc import ABC, abstractmethod
-from functools import cache
+from functools import lru_cache
 
 import pandas as pd
 import yfinance as yf
@@ -35,7 +35,7 @@ class YfinanceNSERawData(RawDataSource):
     When current date changes or market closes, new data is supposed to be fetched.
     So, the date and market_closed args exist only to figure out when to call this func again rather than returning cached data 
     """
-    @cache
+    @lru_cache(maxsize=128)
     def _get_raw_df(self, date: dt.date, market_closed: bool, period: str = 'max') -> pd.DataFrame:
         print(f'\nget_raw {self.ticker}\n')
         if period not in self.ALLOWED_PERIOD_VALUES:
