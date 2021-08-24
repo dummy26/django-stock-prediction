@@ -1,6 +1,7 @@
 from django.db import models
 
 from api.lstm_registry import lstm_registry
+MAX_NUM_OF_PREDICTIONS = 4096
 
 
 class Ticker(models.Model):
@@ -25,3 +26,6 @@ class Prediction(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     prediction = models.FloatField()
     pred_date = models.DateField()
+
+    def __str__(self) -> str:
+        return f'{self.model.ticker.symbol} {self.prediction} {self.pred_date} '
