@@ -45,11 +45,17 @@ def get_latest_pred_date():
     df = lstm_registry.get_service_by_symbol(ticker).preprocessed_data.data_processor.raw_data_source.get_raw_df()
     _, df_last_date = get_df_first_and_last_date(df)
 
-    if dt.datetime.now().time() < MARKET_CLOSING_TIME:
-        return get_str_from_date(df_last_date)
+    today = dt.datetime.now()
+    if df_last_date == today.date():
+        if today.time() < MARKET_CLOSING_TIME:
+            pred_date = df_last_date
+        else:
+            pred_date = df_last_date + dt.timedelta(days=1)
 
-    if df_last_date.weekday() == 4:
-        pred_date = df_last_date + dt.timedelta(days=3)
-    else:
-        pred_date = df_last_date + dt.timedelta(days=1)
+    elif df_last_date < today.date():
+        if df_last_date.weekday() == 4:
+            pred_date = df_last_date + dt.timedelta(days=3)
+        else:
+            pred_date = df_last_date + dt.timedelta(days=1)
+
     return get_str_from_date(pred_date)
