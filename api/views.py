@@ -32,6 +32,7 @@ def prediction(request, symbol):
         try:
             start = time.monotonic()
             y, actual_pred_date = model.predict(pred_date)
+            y = round(float(y), 2)
             print('views predict', time.monotonic() - start)
         except InvalidPredictionDateError:
             return Response(f'Invalid prediction date given: {pred_date}', status=status.HTTP_404_NOT_FOUND)
