@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Union
 
 import pandas as pd
 from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME
@@ -17,12 +18,15 @@ def get_df_first_and_last_date(df: pd.DataFrame):
     return(df.index[0].date(), df.index[-1].date())
 
 
-def get_prediction_date(df: pd.DataFrame, seq_len: int, date: str = None):
+def get_prediction_date(df: pd.DataFrame, seq_len: int, date:  Union[dt.date, str] = None):
     if date is None:
         pred_date = dt.datetime.now().date()
         # timezone = pytz.timezone("Asia/Kolkata")
     else:
-        pred_date = get_date_from_string(date)
+        if isinstance(date, dt.date):
+            pred_date = date
+        else:
+            pred_date = get_date_from_string(date)
 
     df_first_date, df_last_date = get_df_first_and_last_date(df)
     check_if_pred_date_correct(pred_date, df_first_date, df_last_date, seq_len)

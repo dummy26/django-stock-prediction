@@ -1,6 +1,7 @@
+import datetime as dt
 import os
 from abc import ABC, abstractmethod
-from typing import Type
+from typing import Type, Union
 
 from tensorflow.keras.layers import LSTM, BatchNormalization, Dense, Dropout
 from tensorflow.keras.models import Sequential
@@ -78,7 +79,7 @@ class KerasModel(Model, ABC):
             raise ModelNotFoundError(self.ticker, self.seq_len, self.step)
         return model
 
-    def predict(self, date: str = None):
+    def predict(self, date: Union[dt.date, str] = None):
         if self.model is None:
             raise ModelNotFoundError(self.ticker, self.seq_len, self.step)
 

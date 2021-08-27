@@ -1,6 +1,5 @@
 import datetime as dt
 import time
-from functools import lru_cache
 
 import numpy as np
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
@@ -40,11 +39,6 @@ def populate_ticker_and_model_db():
     Model.objects.bulk_create(new_models)
 
 
-@lru_cache(maxsize=64)
-def get_str_from_date(date: dt.date) -> str:
-    return dt.datetime.strftime(date, DATE_FORMAT)
-
-
 def get_pred_date_from_request(request):
     latest_prediction = request.GET.get('latest')
     if latest_prediction is not None and latest_prediction.lower() == 'true':
@@ -75,11 +69,12 @@ def get_latest_pred_date():
         else:
             pred_date = df_last_date + dt.timedelta(days=1)
 
-    return get_str_from_date(pred_date)
+    return pred_date
 
 
 def get_predictions_for_period(period, symbol, model):
-    latest_pred_date = dt.datetime.strptime(get_latest_pred_date(), DATE_FORMAT)
+    # to use df.loc[pred_date] pred_date needs to be dt.datetime not dt.date
+    latest_pred_date = dt.datetime.combine(get_latest_pred_date(), dt.time.min)
     if latest_pred_date.weekday() == 1:
         pred_date = latest_pred_date - dt.timedelta(days=3)
     else:
@@ -102,7 +97,7 @@ def get_predictions_for_period(period, symbol, model):
         prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date).first()
         if prediction_obj is None:
             try:
-                y, actual_pred_date = model.predict(dt.datetime.strftime(pred_date, DATE_FORMAT))
+                y, actual_pred_date = model.predict(pred_date.date())
                 y = round(float(y), 2)
                 prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=actual)
 
