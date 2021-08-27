@@ -10,7 +10,8 @@ from rest_framework.response import Response
 from api.models import Model, Prediction, Ticker
 from api.serializers import (ModelSerializer, PredictionSerializer,
                              TickerSerializer)
-from api.utils import get_latest_pred_date, get_ticker_from_symbol
+from api.utils import (get_pred_date_from_request, get_predictions_for_period,
+                       get_ticker_from_symbol)
 
 
 @ api_view(['GET'])
@@ -23,7 +24,7 @@ def prediction(request, symbol):
     if model is None:
         return Response(f'No model for ticker: {ticker} found', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    pred_date = get_pred_date(request)
+    pred_date = get_pred_date_from_request(request)
     if pred_date is None:
         return Response('pred_date not found in query parameters', status=status.HTTP_404_NOT_FOUND)
 
@@ -45,13 +46,20 @@ def prediction(request, symbol):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-def get_pred_date(request):
-    latest_prediction = request.GET.get('latest')
-    if latest_prediction is not None and latest_prediction.lower() == 'true':
-        return get_latest_pred_date()
+@ api_view(['GET'])
+def predictions(request, symbol):
+    ticker = get_ticker_from_symbol(symbol)
+    if ticker is None:
+        return Response(f'Invalid symbol given: {symbol}', status=status.HTTP_404_NOT_FOUND)
 
-    pred_date = request.GET.get('pred_date')
-    return pred_date
+    model = Model.objects.filter(ticker=ticker).first()
+    if model is None:
+        return Response(f'No model for ticker: {ticker} found', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    period = int(request.GET.get('period', 7))
+    predictions = get_predictions_for_period(period, symbol, model)
+    serializer = PredictionSerializer(predictions, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @ api_view(['GET'])

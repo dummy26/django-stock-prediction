@@ -26,6 +26,6 @@ def delete_prediction_objects():
 def start():
     scheduler = BackgroundScheduler()
     scheduler.add_job(fetch_new_raw_data, 'interval', minutes=1)
-    scheduler.add_job(fetch_new_raw_data, 'interval', days=1)
+    scheduler.add_job(delete_prediction_objects, 'interval', days=1)
     scheduler.start()
     fetch_new_raw_data()

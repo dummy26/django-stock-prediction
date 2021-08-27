@@ -4,12 +4,10 @@ from api.models import Model, Prediction, Ticker
 
 
 class PredictionSerializer(serializers.ModelSerializer):
-    symbol = serializers.ReadOnlyField(source='model.ticker.symbol')
-
     class Meta:
         model = Prediction
         # fields = ['model', 'prediction', 'pred_date']
-        fields = ['prediction', 'pred_date', 'symbol']
+        fields = ['prediction', 'actual', 'pred_date']
 
 
 class ModelSerializer(serializers.ModelSerializer):

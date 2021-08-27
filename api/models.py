@@ -25,6 +25,7 @@ class Model(models.Model):
 class Prediction(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     prediction = models.FloatField()
+    actual = models.FloatField(null=True)
     pred_date = models.DateField()
 
     def __str__(self) -> str:
