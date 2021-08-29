@@ -1,13 +1,11 @@
 import time
 
-from model_backend.data.data_processor import ScalerNotFoundError
 from model_backend.model.keras_model.utils import InvalidPredictionDateError
-from model_backend.model.model import ModelNotFoundError
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.models import Model, Prediction, Ticker
+from api.models import Model, Prediction, PredictionError, Ticker
 from api.serializers import (ModelSerializer, PredictionSerializer,
                              TickerSerializer)
 from api.utils import (get_pred_date_from_request, get_predictions_for_period,
@@ -37,8 +35,8 @@ def prediction(request, symbol):
             print('views predict', time.monotonic() - start)
         except InvalidPredictionDateError:
             return Response(f'Invalid prediction date given: {pred_date}', status=status.HTTP_404_NOT_FOUND)
-        except (ModelNotFoundError, ScalerNotFoundError):
-            return Response(f'Could not find model files.', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except PredictionError as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y)
 
@@ -63,7 +61,11 @@ def predictions(request, symbol):
     except ValueError:
         return Response(f'Invalid value of period given, it should be an integer', status=status.HTTP_404_NOT_FOUND)
 
-    predictions = get_predictions_for_period(period, symbol, model)
+    try:
+        predictions = get_predictions_for_period(period, symbol, model)
+    except PredictionError as e:
+        return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     serializer = PredictionSerializer(predictions, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

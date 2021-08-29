@@ -1,6 +1,9 @@
 from django.db import models
+from model_backend.data.data_processor import ScalerNotFoundError
+from model_backend.model.model import ModelNotFoundError
 
 from api.lstm_registry import lstm_registry
+
 MAX_NUM_OF_PREDICTIONS = 4096
 
 
@@ -16,7 +19,11 @@ class Model(models.Model):
     ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
 
     def predict(self, pred_date):
-        y, pred_date = lstm_registry.get_service_by_symbol(self.ticker.symbol).predict(pred_date)
+        try:
+            y, pred_date = lstm_registry.get_service_by_symbol(self.ticker.symbol).predict(pred_date)
+        except (ModelNotFoundError, ScalerNotFoundError):
+            raise PredictionError(self.ticker.symbol)
+
         return round(y, 2), pred_date
 
     def __str__(self) -> str:
@@ -31,3 +38,9 @@ class Prediction(models.Model):
 
     def __str__(self) -> str:
         return f'{self.model.ticker.symbol} {self.prediction} {self.pred_date} '
+
+
+class PredictionError(Exception):
+    def __init__(self, ticker: str) -> None:
+        msg = f"Could not predict for ticker: {ticker} because of missing files on server."
+        super().__init__(msg)

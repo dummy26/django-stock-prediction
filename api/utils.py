@@ -3,13 +3,10 @@ import time
 
 import numpy as np
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
-from model_backend.data.data_processor import ScalerNotFoundError
 from model_backend.data.utils import get_all_nse_company_names_and_ticker
 from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME
-from model_backend.model.keras_model.utils import (DATE_FORMAT,
-                                                   InvalidPredictionDateError,
+from model_backend.model.keras_model.utils import (InvalidPredictionDateError,
                                                    get_df_first_and_last_date)
-from model_backend.model.model import ModelNotFoundError
 
 from api.lstm_registry import lstm_registry
 from api.models import Model, Prediction, Ticker
@@ -99,9 +96,6 @@ def get_predictions_for_period(period, symbol, model):
             try:
                 y, actual_pred_date = model.predict(pred_date.date())
                 prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=actual)
-
-            # except (ModelNotFoundError, ScalerNotFoundError):
-            #     return Response(f'Could not find model files.', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             except InvalidPredictionDateError:
                 pass
 
