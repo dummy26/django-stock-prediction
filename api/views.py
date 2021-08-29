@@ -56,7 +56,11 @@ def predictions(request, symbol):
     if model is None:
         return Response(f'No model for ticker: {ticker} found', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    period = int(request.GET.get('period', 7))
+    try:
+        period = int(request.GET.get('period', 7))
+    except ValueError:
+        return Response(f'Invalid value of period given, it should be an integer', status=status.HTTP_404_NOT_FOUND)
+
     predictions = get_predictions_for_period(period, symbol, model)
     serializer = PredictionSerializer(predictions, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
