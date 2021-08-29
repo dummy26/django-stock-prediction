@@ -58,6 +58,8 @@ def predictions(request, symbol):
 
     try:
         period = int(request.GET.get('period', 7))
+        if period < 1:
+            return Response(f'Invalid value of period given, it should be >= 1', status=status.HTTP_404_NOT_FOUND)
     except ValueError:
         return Response(f'Invalid value of period given, it should be an integer', status=status.HTTP_404_NOT_FOUND)
 
