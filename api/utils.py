@@ -98,7 +98,6 @@ def get_predictions_for_period(period, symbol, model):
         if prediction_obj is None:
             try:
                 y, actual_pred_date = model.predict(pred_date.date())
-                y = round(float(y), 2)
                 prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=actual)
 
             # except (ModelNotFoundError, ScalerNotFoundError):

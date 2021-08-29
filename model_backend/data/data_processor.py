@@ -132,7 +132,7 @@ class PandasDataProcessor(DataProcessor):
         scaler = self.get_scaler()
 
         dummy = pd.DataFrame(np.zeros((len(y), len(colNames))), columns=colNames)
-        dummy[closeCol] = y
+        dummy[closeCol] = float(y)
         dummy = pd.DataFrame(scaler.inverse_transform(dummy), columns=colNames)
         return dummy[closeCol].values[0]
 

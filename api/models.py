@@ -16,7 +16,8 @@ class Model(models.Model):
     ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
 
     def predict(self, pred_date):
-        return lstm_registry.get_service_by_symbol(self.ticker.symbol).predict(pred_date)
+        y, pred_date = lstm_registry.get_service_by_symbol(self.ticker.symbol).predict(pred_date)
+        return round(y, 2), pred_date
 
     def __str__(self) -> str:
         return f'{self.ticker.symbol}'
