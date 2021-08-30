@@ -106,11 +106,13 @@ class PandasDataProcessor(DataProcessor):
         return train_data, val_data, test_data
 
     def save_scaler(self, scaler: StandardScaler) -> None:
-        file_path = self.get_scaler_file_path()
+        base_dir, file_path = self.get_scaler_file_path()
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
         joblib.dump(scaler, file_path)
 
     def get_scaler(self) -> StandardScaler:
-        file_path = self.get_scaler_file_path()
+        _, file_path = self.get_scaler_file_path()
         if not os.path.exists(file_path):
             raise ScalerNotFoundError(file_path, self.ticker, self.seq_len, self.step)
         return joblib.load(file_path)
@@ -118,13 +120,10 @@ class PandasDataProcessor(DataProcessor):
     def get_scaler_file_path(self):
         base_dir = os.path.dirname(os.path.realpath(__file__))
         scaler_path = os.path.join(base_dir, 'scalers')
-        ticker_path = os.path.join(scaler_path, self.ticker)
-
-        if not os.path.exists(ticker_path):
-            os.makedirs(ticker_path)
+        ticker_path = os.path.join(scaler_path, self.ticker.lower())
 
         file_path = os.path.join(ticker_path, 'scaler.gz')
-        return file_path
+        return ticker_path, file_path
 
     def invTransform(self, y):
         colNames = self.raw_data_source.FEATURE_KEYS
