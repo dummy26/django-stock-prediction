@@ -1,5 +1,6 @@
 import datetime as dt
 import time
+from functools import lru_cache
 
 import numpy as np
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
@@ -77,6 +78,11 @@ def get_predictions_for_period(period, symbol, model):
     else:
         pred_date = latest_pred_date - dt.timedelta(days=1)
 
+    return _get_predictions_for_period(period, symbol, pred_date, model)
+
+
+@lru_cache(maxsize=64)
+def _get_predictions_for_period(period, symbol, pred_date, model):
     start = time.monotonic()
 
     predictions = []
@@ -105,7 +111,9 @@ def get_predictions_for_period(period, symbol, model):
             i += 1
 
     predictions.sort(key=lambda prediction: prediction.pred_date)
-    print('views predictions', time.monotonic() - start)
+
+    print('_get_predictions_for_period', period, symbol, time.monotonic() - start)
+
     return predictions
 
 

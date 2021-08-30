@@ -12,6 +12,7 @@ def fetch_new_raw_data():
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(fetch_new_raw_data_from_symbol, symbols)
 
+
 def fetch_new_raw_data_from_symbol(symbol):
     lstm_registry.get_service_by_symbol(symbol).preprocessed_data.data_processor.raw_data_source.get_raw_df()
 
