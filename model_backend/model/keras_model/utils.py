@@ -29,6 +29,7 @@ def get_prediction_date(df: pd.DataFrame, seq_len: int, date:  Union[dt.date, st
             pred_date = get_date_from_string(date)
 
     df_first_date, df_last_date = get_df_first_and_last_date(df)
+
     check_if_pred_date_correct(pred_date, df_first_date, df_last_date, seq_len)
     return pred_date
 
@@ -56,9 +57,11 @@ def check_if_pred_date_correct(pred_date: dt.date, df_first_date: dt.date, df_la
     elif df_last_date + dt.timedelta(days=1) < pred_date:
         raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
-    # can only pred for tomorrow if current time is greater than MARKET_CLOSING_TIME (cuz we get correct value of CLOSE_PRICE after MARKET_CLOSING_TIME)
-    elif df_last_date + dt.timedelta(days=1) == pred_date and dt.datetime.now().time() < MARKET_CLOSING_TIME:
-        raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
+    # if today is df_last_date then we can pred for df_last_date + 1 only if current time is greater than MARKET_CLOSING_TIME (cuz we get correct value of CLOSE_PRICE after MARKET_CLOSING_TIME)
+    elif df_last_date + dt.timedelta(days=1) == pred_date:
+        today = dt.datetime.now()
+        if today.date() == df_last_date and today.time() < MARKET_CLOSING_TIME:
+            raise InvalidPredictionDateError(pred_date, df_last_date, seq_len)
 
 
 class InvalidPredictionDateError(Exception):
