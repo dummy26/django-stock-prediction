@@ -104,7 +104,10 @@ def _get_predictions_for_period(period, symbol, pred_date, model):
                 prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=actual)
             except InvalidPredictionDateError:
                 pass
-
+        else:
+            if prediction_obj.actual is None:
+                prediction_obj.actual = actual
+                prediction_obj.save()
         if prediction_obj is not None:
             predictions.append(prediction_obj)
             pred_date -= dt.timedelta(days=1)
@@ -115,6 +118,30 @@ def _get_predictions_for_period(period, symbol, pred_date, model):
     print('_get_predictions_for_period', period, symbol, time.monotonic() - start)
 
     return predictions
+
+
+def get_saved_prediction_from_model_and_pred_date(model, pred_date):
+    prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date).first()
+    if prediction_obj is None:
+        return None
+
+    if prediction_obj.actual is not None:
+        return prediction_obj
+
+    prediction_obj.actual = get_actual_from_symbol_and_pred_date(model.ticker.symbol, pred_date)
+    prediction_obj.save()
+    return prediction_obj
+
+
+def get_actual_from_symbol_and_pred_date(symbol, pred_date):
+    raw_data_source = lstm_registry.get_service_by_symbol(symbol).preprocessed_data.data_processor.raw_data_source
+    df = get_processed_df(raw_data_source)
+    try:
+        actual = df.loc[pred_date] * 100
+    except KeyError:
+        actual = None
+
+    return actual
 
 
 def get_processed_df(raw_data_source):

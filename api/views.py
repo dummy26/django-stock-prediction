@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from api.models import Model, Prediction, PredictionError, Ticker
 from api.serializers import (ModelSerializer, PredictionSerializer,
                              TickerSerializer)
-from api.utils import (get_pred_date_from_request, get_predictions_for_period,
+from api.utils import (get_actual_from_symbol_and_pred_date, get_pred_date_from_request, get_predictions_for_period, get_saved_prediction_from_model_and_pred_date,
                        get_ticker_from_symbol)
 
 
@@ -26,7 +26,7 @@ def prediction(request, symbol):
     if pred_date is None:
         return Response('pred_date not found in query parameters', status=status.HTTP_404_NOT_FOUND)
 
-    prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date).first()
+    prediction_obj = get_saved_prediction_from_model_and_pred_date(model, pred_date)
     if prediction_obj is None:
         try:
             start = time.monotonic()
@@ -38,7 +38,7 @@ def prediction(request, symbol):
         except PredictionError as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y)
+        prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=get_actual_from_symbol_and_pred_date(ticker.symbol, pred_date))
 
     serializer = PredictionSerializer(prediction_obj)
     return Response(serializer.data, status=status.HTTP_200_OK)
