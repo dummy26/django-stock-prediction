@@ -44,6 +44,7 @@ def prediction(request, symbol):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# It return predictions till latest_pred_date - 1 because we have actual data only till this date
 @ api_view(['GET'])
 def predictions(request, symbol):
     ticker = get_ticker_from_symbol(symbol)

@@ -92,7 +92,7 @@ def _get_predictions_for_period(period, symbol, pred_date, model):
     i = 0
     while i < period:
         try:
-            actual = df.loc[pred_date] * 100
+            actual = round(df.loc[pred_date] * 100, 2)
         except KeyError:
             pred_date -= dt.timedelta(days=1)
             continue
@@ -137,7 +137,7 @@ def get_actual_from_symbol_and_pred_date(symbol, pred_date):
     raw_data_source = lstm_registry.get_service_by_symbol(symbol).preprocessed_data.data_processor.raw_data_source
     df = get_processed_df(raw_data_source)
     try:
-        actual = df.loc[pred_date] * 100
+        actual = round(df.loc[pred_date] * 100, 2)
     except KeyError:
         actual = None
 
