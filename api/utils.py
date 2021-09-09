@@ -70,7 +70,7 @@ def get_latest_pred_date():
     return pred_date
 
 
-def get_predictions_for_period(period, symbol, model):
+def get_predictions_for_period(period, model):
     # to use df.loc[pred_date] pred_date needs to be dt.datetime not dt.date
     latest_pred_date = dt.datetime.combine(get_latest_pred_date(), dt.time.min)
     if latest_pred_date.weekday() == 1:
@@ -78,15 +78,15 @@ def get_predictions_for_period(period, symbol, model):
     else:
         pred_date = latest_pred_date - dt.timedelta(days=1)
 
-    return _get_predictions_for_period(period, symbol, pred_date, model)
+    return _get_predictions_for_period(period, pred_date, model)
 
 
 @lru_cache(maxsize=64)
-def _get_predictions_for_period(period, symbol, pred_date, model):
+def _get_predictions_for_period(period, pred_date, model):
     start = time.monotonic()
 
     predictions = []
-    raw_data_source = lstm_registry.get_service_by_symbol(symbol).preprocessed_data.data_processor.raw_data_source
+    raw_data_source = lstm_registry.get_service_by_symbol(model.ticker.symbol).preprocessed_data.data_processor.raw_data_source
     df = get_processed_df(raw_data_source)
 
     i = 0
@@ -115,7 +115,7 @@ def _get_predictions_for_period(period, symbol, pred_date, model):
 
     predictions.sort(key=lambda prediction: prediction.pred_date)
 
-    print('_get_predictions_for_period', period, symbol, time.monotonic() - start)
+    print('_get_predictions_for_period', period, model.ticker.symbol, time.monotonic() - start)
 
     return predictions
 

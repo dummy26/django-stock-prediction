@@ -63,7 +63,7 @@ def predictions(request, symbol):
         return Response(f'Invalid value of period given, it should be an integer', status=status.HTTP_404_NOT_FOUND)
 
     try:
-        predictions = get_predictions_for_period(period, symbol, model)
+        predictions = get_predictions_for_period(period, model)
     except PredictionError as e:
         return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
