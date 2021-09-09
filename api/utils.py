@@ -97,11 +97,11 @@ def _get_predictions_for_period(period, pred_date, model):
             pred_date -= dt.timedelta(days=1)
             continue
 
-        prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date).first()
+        prediction_obj = Prediction.objects.filter(model=model, pred_date=pred_date.date()).first()
         if prediction_obj is None:
             try:
-                y, actual_pred_date = model.predict(pred_date.date())
-                prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=actual)
+                y, _ = model.predict(pred_date.date())
+                prediction_obj = Prediction.objects.create(model=model, pred_date=pred_date.date(), prediction=y, actual=actual)
             except InvalidPredictionDateError:
                 pass
         else:

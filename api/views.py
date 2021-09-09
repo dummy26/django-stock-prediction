@@ -30,7 +30,7 @@ def prediction(request, symbol):
     if prediction_obj is None:
         try:
             start = time.monotonic()
-            y, actual_pred_date = model.predict(pred_date)
+            y, pred_date = model.predict(pred_date)
             y = round(float(y), 2)
             print('views predict', time.monotonic() - start)
         except InvalidPredictionDateError:
@@ -38,7 +38,7 @@ def prediction(request, symbol):
         except PredictionError as e:
             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        prediction_obj = Prediction.objects.create(model=model, pred_date=actual_pred_date, prediction=y, actual=get_actual_from_symbol_and_pred_date(ticker.symbol, pred_date))
+        prediction_obj = Prediction.objects.create(model=model, pred_date=pred_date, prediction=y, actual=get_actual_from_symbol_and_pred_date(ticker.symbol, pred_date))
 
     serializer = PredictionSerializer(prediction_obj)
     return Response(serializer.data, status=status.HTTP_200_OK)
