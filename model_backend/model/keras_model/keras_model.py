@@ -97,7 +97,7 @@ class KerasModel(Model, ABC):
     def _get_checkpoint_path(self) -> str:
         dirname = os.path.dirname(os.path.realpath(__file__))
         base_path = os.path.join(dirname, SAVED_MODELS_BASE_PATH)
-        checkpoint_base_path = os.path.join(base_path, self.ticker)
+        checkpoint_base_path = os.path.join(base_path, self.ticker.lower())
 
         checkpoint_path = os.path.join(checkpoint_base_path, 'cp.ckpt')
 
