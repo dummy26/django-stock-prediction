@@ -133,6 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://react-stock-prediction.herokuapp.com/"
 ]
 
 STATICFILES_DIRS = [
