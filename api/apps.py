@@ -3,6 +3,7 @@
 # https://docs.djangoproject.com/en/3.2/ref/applications/#django.apps.AppConfig.ready)
 
 from django.apps import AppConfig
+from django.db.utils import OperationalError
 
 
 class ApiConfig(AppConfig):
@@ -14,7 +15,10 @@ class ApiConfig(AppConfig):
         from api.models import Ticker
         from api.utils import populate_ticker_and_model_db
 
-        populate_ticker_and_model_db()
+        try:
+            populate_ticker_and_model_db()
+        except OperationalError:
+            pass
 
         symbols = Ticker.objects.values_list('symbol', flat=True)
         for symbol in symbols:
