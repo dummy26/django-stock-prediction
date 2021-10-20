@@ -35,7 +35,3 @@ def start():
     scheduler.add_job(fetch_new_raw_data, 'interval', minutes=1)
     scheduler.add_job(delete_prediction_objects, 'interval', days=1)
     scheduler.start()
-    try:
-        fetch_new_raw_data()
-    except OperationalError:
-        pass

@@ -3,6 +3,7 @@ import time
 from functools import lru_cache
 
 import numpy as np
+from django.db.utils import ProgrammingError
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
 from model_backend.data.utils import get_all_nse_company_names_and_ticker
 from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME
@@ -19,22 +20,25 @@ def get_ticker_from_symbol(symbol):
 
 
 def populate_ticker_and_model_db():
-    df = get_all_nse_company_names_and_ticker()
-    all_symbols = {symbol for symbol in df[SYMBOL_COLUMN]}
+    try:
+        df = get_all_nse_company_names_and_ticker()
+        all_symbols = {symbol for symbol in df[SYMBOL_COLUMN]}
 
-    db_symbols = {ticker.symbol for ticker in Ticker.objects.all()}
-    missing_symbols = all_symbols-db_symbols
+        db_symbols = {ticker.symbol for ticker in Ticker.objects.all()}
+        missing_symbols = all_symbols-db_symbols
 
-    new_tickers = []
-    new_models = []
-    for symbol in missing_symbols:
-        company_name = df[df[SYMBOL_COLUMN] == symbol][NAME_OF_COMP_COLUMN].item()
-        ticker = Ticker(symbol=symbol, company_name=company_name)
-        new_tickers.append(ticker)
-        new_models.append(Model(ticker=ticker))
+        new_tickers = []
+        new_models = []
+        for symbol in missing_symbols:
+            company_name = df[df[SYMBOL_COLUMN] == symbol][NAME_OF_COMP_COLUMN].item()
+            ticker = Ticker(symbol=symbol, company_name=company_name)
+            new_tickers.append(ticker)
+            new_models.append(Model(ticker=ticker))
 
-    Ticker.objects.bulk_create(new_tickers)
-    Model.objects.bulk_create(new_models)
+        Ticker.objects.bulk_create(new_tickers)
+        Model.objects.bulk_create(new_models)
+    except ProgrammingError:
+        pass
 
 
 def get_pred_date_from_request(request):
