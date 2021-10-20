@@ -1,6 +1,7 @@
 import concurrent.futures
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.db.utils import OperationalError
 
 from api.lstm_registry import lstm_registry
 from api.models import MAX_NUM_OF_PREDICTIONS, Prediction, Ticker
@@ -34,4 +35,7 @@ def start():
     scheduler.add_job(fetch_new_raw_data, 'interval', minutes=1)
     scheduler.add_job(delete_prediction_objects, 'interval', days=1)
     scheduler.start()
-    fetch_new_raw_data()
+    try:
+        fetch_new_raw_data()
+    except OperationalError:
+        pass
