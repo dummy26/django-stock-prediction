@@ -17,13 +17,13 @@ class ApiConfig(AppConfig):
 
         try:
             populate_ticker_and_model_db()
+
+            symbols = Ticker.objects.values_list('symbol', flat=True)
+            for symbol in symbols:
+                lstm_registry.register(symbol)
+
         except OperationalError:
             pass
-
-        symbols = Ticker.objects.values_list('symbol', flat=True)
-        for symbol in symbols:
-            lstm_registry.register(symbol)
-
         # Two schedulers are set up when using py manage.py runserver - one by main process and one by reloader
         import api.scheduler as scheduler
         scheduler.start()
