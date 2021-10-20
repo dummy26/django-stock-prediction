@@ -20,25 +20,22 @@ def get_ticker_from_symbol(symbol):
 
 
 def populate_ticker_and_model_db():
-    try:
-        df = get_all_nse_company_names_and_ticker()
-        all_symbols = {symbol for symbol in df[SYMBOL_COLUMN]}
+    df = get_all_nse_company_names_and_ticker()
+    all_symbols = {symbol for symbol in df[SYMBOL_COLUMN]}
 
-        db_symbols = {ticker.symbol for ticker in Ticker.objects.all()}
-        missing_symbols = all_symbols-db_symbols
+    db_symbols = {ticker.symbol for ticker in Ticker.objects.all()}
+    missing_symbols = all_symbols-db_symbols
 
-        new_tickers = []
-        new_models = []
-        for symbol in missing_symbols:
-            company_name = df[df[SYMBOL_COLUMN] == symbol][NAME_OF_COMP_COLUMN].item()
-            ticker = Ticker(symbol=symbol, company_name=company_name)
-            new_tickers.append(ticker)
-            new_models.append(Model(ticker=ticker))
+    new_tickers = []
+    new_models = []
+    for symbol in missing_symbols:
+        company_name = df[df[SYMBOL_COLUMN] == symbol][NAME_OF_COMP_COLUMN].item()
+        ticker = Ticker(symbol=symbol, company_name=company_name)
+        new_tickers.append(ticker)
+        new_models.append(Model(ticker=ticker))
 
-        Ticker.objects.bulk_create(new_tickers)
-        Model.objects.bulk_create(new_models)
-    except ProgrammingError:
-        pass
+    Ticker.objects.bulk_create(new_tickers)
+    Model.objects.bulk_create(new_models)
 
 
 def get_pred_date_from_request(request):
