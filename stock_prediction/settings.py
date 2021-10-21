@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 import django_heroku
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,8 +28,7 @@ SECRET_KEY = 'django-insecure-paya8oog5rc73@-urt1l=u#jtcjaia)0-ul&mlwj#y=jssyttb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["react-stock-prediction.herokuapp.com"]
-
+ALLOWED_HOSTS = ["django-stock-prediction.herokuapp.com"]
 
 # Application definition
 
@@ -60,7 +60,7 @@ ROOT_URLCONF = 'stock_prediction.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'react/build')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -133,11 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://react-stock-prediction.herokuapp.com"
-]
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'react/build/static')
+    'https://ani-stock-prediction.herokuapp.com'
 ]
 
 django_heroku.settings(locals())
