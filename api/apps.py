@@ -3,6 +3,7 @@
 # https://docs.djangoproject.com/en/3.2/ref/applications/#django.apps.AppConfig.ready)
 
 from django.apps import AppConfig
+from django.db.utils import OperationalError, ProgrammingError
 
 
 class ApiConfig(AppConfig):

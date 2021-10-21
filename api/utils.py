@@ -3,6 +3,7 @@ import time
 from functools import lru_cache
 
 import numpy as np
+from django.db.utils import ProgrammingError
 from model_backend.data.constants import NAME_OF_COMP_COLUMN, SYMBOL_COLUMN
 from model_backend.data.utils import get_all_nse_company_names_and_ticker
 from model_backend.model.keras_model.constants import MARKET_CLOSING_TIME

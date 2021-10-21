@@ -1,6 +1,7 @@
 import concurrent.futures
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.db.utils import OperationalError
 
 from api.lstm_registry import lstm_registry
 from api.models import MAX_NUM_OF_PREDICTIONS, Prediction, Ticker
