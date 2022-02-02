@@ -26,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-paya8oog5rc73@-urt1l=u#jtcjaia)0-ul&mlwj#y=jssyttb'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["django-stock-prediction.herokuapp.com"]
+ALLOWED_HOSTS = ["ani-stock-prediction-api.herokuapp.com"]
 
 # Application definition
 
