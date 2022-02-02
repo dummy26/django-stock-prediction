@@ -133,7 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    'https://ani-stock-prediction.herokuapp.com'
+    'https://react-stock-prediction.herokuapp.com'
 ]
 
 django_heroku.settings(locals())
